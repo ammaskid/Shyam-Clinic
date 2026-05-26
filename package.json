@@ -1,9 +1,9 @@
 {
   "name": "shyam-dental-clinic",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
-  "description": "Shyam Dental Clinic — modern web app with online booking and secure admin panel. Built by Loomix Studios.",
+  "description": "Shyam Dental Clinic — modern web app with online booking, GSAP animations, 3D elements and a secure admin panel. Built by Loomix Studios.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,7 +12,9 @@
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2"
+    "react-router-dom": "^6.26.2",
+    "gsap": "^3.12.5",
+    "three": "^0.160.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

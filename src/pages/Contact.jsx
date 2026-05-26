@@ -36,8 +36,7 @@ export default function Contact() {
 
       <section className="section" style={{ paddingTop: 54 }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.1fr', gap: 40 }}
-               className="contact-grid">
+          <div className="contact-grid">
             {/* INFO */}
             <Reveal>
               <span className="eyebrow">Reach Us</span>

@@ -24,6 +24,11 @@ Built as a sellable demo / sales model by **Loomix Studios**.
 - **Billing** — invoices, collected vs outstanding revenue
 - **Analytics** — revenue by treatment, clinic health stats
 
+**Animations & 3D**
+- A real **3D rotating tooth** in the hero (Three.js) — drag to spin it
+- Smooth **GSAP scroll animations** throughout
+- Both fail safely: if they can't load, the site still works perfectly
+
 **Under the hood**
 - Real **Vite + React 18 + React Router** project — proper, deployable
 - **Fully mobile-responsive** (tested down to 360px)

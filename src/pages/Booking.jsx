@@ -114,8 +114,7 @@ export default function Booking() {
                 <p style={{ color: 'var(--ink-soft)', marginBottom: 20, fontSize: '.94rem' }}>
                   Select the service you'd like to book.
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}
-                     className="pick-grid">
+                <div className="pick-grid">
                   {SERVICES.map((s) => (
                     <div key={s.id}
                          className={'pick-card' + (data.service === s.name ? ' sel' : '')}

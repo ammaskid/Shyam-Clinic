@@ -1,30 +1,61 @@
 /* ============================================================
-   Home Page
+   Home Page — with 3D tooth hero + GSAP animations
    ============================================================ */
 
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import Icon from '../components/Icon'
 import Reveal from '../components/Reveal'
+import Tooth3D from '../components/Tooth3D'
 import { SERVICES, DOCTORS, REVIEWS, FEATURES, STATS } from '../data/clinicData'
 
 export default function Home() {
+  const heroRef = useRef(null)
+
+  // GSAP hero entrance — safe lazy load, fails open
+  useEffect(() => {
+    const root = heroRef.current
+    if (!root) return
+    const reduce = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) return
+
+    let ctx = null
+    let cancelled = false
+    ;(async () => {
+      try {
+        const g = await import('gsap')
+        const gsap = g.gsap || g.default
+        if (cancelled) return
+        ctx = gsap.context(() => {
+          const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+          tl.from('.hero-anim', { y: 32, opacity: 0, duration: 0.7, stagger: 0.12 })
+            .from('.hero-visual', { scale: 0.9, opacity: 0, duration: 0.9 }, '-=0.5')
+        }, root)
+      } catch (e) {
+        console.warn('Hero GSAP skipped.', e)
+      }
+    })()
+    return () => { cancelled = true; if (ctx) ctx.revert() }
+  }, [])
+
   return (
     <div>
       {/* ---- HERO ---- */}
-      <section className="hero">
+      <section className="hero" ref={heroRef}>
         <div className="hero-blob blob-1" />
         <div className="hero-blob blob-2" />
         <div className="container hero-grid">
           <div>
-            <div className="hero-pill">
+            <div className="hero-pill hero-anim">
               <span className="dot" /> Now accepting new patients in Kollam
             </div>
-            <h1>Your Best Smile <em>Starts Here.</em></h1>
-            <p className="hero-sub">
+            <h1 className="hero-anim">Your Best Smile <em>Starts Here.</em></h1>
+            <p className="hero-sub hero-anim">
               Gentle, modern and genuinely caring dentistry for the whole family.
               Book in seconds, skip the queue, and smile with confidence.
             </p>
-            <div className="hero-actions">
+            <div className="hero-actions hero-anim">
               <Link to="/booking" className="btn btn-primary btn-lg">
                 <Icon name="calendar" size={19} /> Book an Appointment
               </Link>
@@ -32,7 +63,7 @@ export default function Home() {
                 Explore Services <Icon name="arrow" size={17} />
               </Link>
             </div>
-            <div className="hero-stats">
+            <div className="hero-stats hero-anim">
               {STATS.map((s) => (
                 <div className="hero-stat" key={s.label}>
                   <b>{s.value}</b>
@@ -42,10 +73,10 @@ export default function Home() {
             </div>
           </div>
 
+          {/* 3D TOOTH */}
           <div className="hero-visual">
-            <div className="hero-card-main">
-              <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=800&q=80"
-                   alt="Modern dental clinic interior" loading="eager" />
+            <div className="hero-3d-stage">
+              <Tooth3D height={400} />
             </div>
             <div className="hero-float hero-float-1">
               <div className="icon-circle" style={{ background: '#d6f6ef', color: '#0f7268' }}>
@@ -64,6 +95,9 @@ export default function Home() {
                 <b>4.9 / 5.0</b>
                 <span>1,800+ happy reviews</span>
               </div>
+            </div>
+            <div className="hero-3d-hint">
+              <Icon name="sparkle" size={14} /> Drag to rotate
             </div>
           </div>
         </div>
@@ -114,13 +148,11 @@ export default function Home() {
       {/* ---- WHY US ---- */}
       <section className="section">
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 52, alignItems: 'center' }}
-               className="why-grid">
+          <div className="why-grid">
             <Reveal>
               <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80"
                    alt="Dentist caring for a patient"
-                   style={{ borderRadius: 24, boxShadow: 'var(--shadow-md)', width: '100%', height: 430, objectFit: 'cover' }}
-                   loading="lazy" />
+                   className="why-img" loading="lazy" />
             </Reveal>
             <Reveal delay={0.12}>
               <span className="eyebrow">Why Shyam Dental</span>
@@ -136,9 +168,8 @@ export default function Home() {
                 { ic: 'rupee', t: 'Transparent Pricing', d: 'Know the cost before we begin — zero hidden charges.' },
                 { ic: 'users', t: 'Specialists for Every Need', d: 'Implantologist, orthodontist and paediatric experts in-house.' },
               ].map((x) => (
-                <div key={x.t} style={{ display: 'flex', gap: 15, marginBottom: 16 }}>
-                  <div style={{ width: 46, height: 46, borderRadius: 13, background: 'var(--mint-100)',
-                                color: 'var(--teal-600)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                <div key={x.t} className="why-point">
+                  <div className="why-point-ic">
                     <Icon name={x.ic} size={22} />
                   </div>
                   <div>
