@@ -1,23 +1,28 @@
 /* ============================================================
-   Booking Page — multi-step appointment flow
+   Booking Page — multi-step flow + ticket popup + 3D element
    ============================================================ */
 
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Icon from '../components/Icon'
+import Scene3D from '../components/Scene3D'
+import BookingTicket from '../components/BookingTicket'
+import { usePageAnimations } from '../components/useGsapReveal'
 import { SERVICES, DOCTORS, TIME_SLOTS } from '../data/clinicData'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 
-const STEP_LABELS = ['Service', 'Doctor & Time', 'Your Details', 'Done']
+const STEP_LABELS = ['Service', 'Doctor & Time', 'Your Details']
 
 export default function Booking() {
   const navigate = useNavigate()
+  const pageRef = usePageAnimations()
   const { addAppointment } = useApp()
   const notify = useToast()
 
   const [step, setStep] = useState(1)
-  const [confirmed, setConfirmed] = useState(null)
+  const [confirmed, setConfirmed] = useState(null)   // booking object once done
+  const [showTicket, setShowTicket] = useState(false)
   const [data, setData] = useState({
     service: '', doctor: '', date: '', slot: '',
     name: '', phone: '', email: '', notes: '',
@@ -46,7 +51,7 @@ export default function Booking() {
         id: 'A-' + Math.floor(509 + Math.random() * 490),
         patient: data.name.trim(),
         doctor: data.doctor,
-        date: new Date(data.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+        date: new Date(data.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
         time: data.slot,
         service: data.service,
         status: 'confirmed',
@@ -55,9 +60,8 @@ export default function Booking() {
       }
       addAppointment(appt)
       setConfirmed(appt)
-      setStep(4)
-      notify('Appointment Confirmed! ✅', 'A WhatsApp confirmation has been sent.')
-      window.scrollTo(0, 0)
+      setShowTicket(true)
+      notify('Appointment Confirmed! ✅', 'Your booking ticket is ready.')
       return
     }
     setStep(step + 1)
@@ -69,43 +73,53 @@ export default function Booking() {
   const reset = () => {
     setStep(1)
     setConfirmed(null)
+    setShowTicket(false)
     setData({ service: '', doctor: '', date: '', slot: '', name: '', phone: '', email: '', notes: '' })
+    window.scrollTo(0, 0)
   }
 
   return (
-    <div>
-      <section className="page-hero">
-        <div className="container">
-          <div className="crumbs">Home / Book Appointment</div>
-          <h1>Book Your <em>Appointment</em></h1>
-          <p>It takes less than a minute. Choose, confirm, and you're set.</p>
+    <div ref={pageRef}>
+      {/* HERO with 3D ring element */}
+      <section className="page-hero booking-hero">
+        <div className="container booking-hero-grid">
+          <div>
+            <div className="crumbs anim">Home / Book Appointment</div>
+            <h1 className="anim">Book Your <em>Appointment</em></h1>
+            <p className="anim">It takes less than a minute. Choose your treatment, pick a time, and get an instant confirmation ticket.</p>
+            <div className="booking-hero-badges anim">
+              <span><Icon name="check" size={14} /> Instant confirmation</span>
+              <span><Icon name="bell" size={14} /> WhatsApp reminders</span>
+            </div>
+          </div>
+          <div className="booking-hero-3d anim">
+            <Scene3D variant="ring" height={300} />
+          </div>
         </div>
       </section>
 
-      <section className="section" style={{ paddingTop: 48 }}>
+      <section className="section" style={{ paddingTop: 40 }}>
         <div className="container">
-          <div className="form-card">
+          <div className="form-card anim">
 
             {/* STEP INDICATOR */}
-            {step < 4 && (
-              <div className="steps">
-                {STEP_LABELS.map((label, i) => {
-                  const n = i + 1
-                  const on = step >= n
-                  return (
-                    <div className="step-node" key={label}>
-                      <div className="step-dot">
-                        <div className={'step-circle' + (on ? ' active' : '')}>
-                          {step > n ? <Icon name="check" size={18} /> : n}
-                        </div>
-                        <span className={'step-label' + (on ? ' active' : '')}>{label}</span>
+            <div className="steps">
+              {STEP_LABELS.map((label, i) => {
+                const n = i + 1
+                const on = step >= n
+                return (
+                  <div className="step-node" key={label}>
+                    <div className="step-dot">
+                      <div className={'step-circle' + (on ? ' active' : '')}>
+                        {step > n ? <Icon name="check" size={18} /> : n}
                       </div>
-                      {i < 3 && <div className={'step-line' + (step > n ? ' active' : '')} />}
+                      <span className={'step-label' + (on ? ' active' : '')}>{label}</span>
                     </div>
-                  )
-                })}
-              </div>
-            )}
+                    {i < 2 && <div className={'step-line' + (step > n ? ' active' : '')} />}
+                  </div>
+                )
+              })}
+            </div>
 
             {/* STEP 1 — SERVICE */}
             {step === 1 && (
@@ -135,7 +149,7 @@ export default function Booking() {
             {/* STEP 2 — DOCTOR + DATE + SLOT */}
             {step === 2 && (
               <div>
-                <h3 style={{ fontSize: '1.35rem', marginBottom: 16 }}>Pick your doctor & time</h3>
+                <h3 style={{ fontSize: '1.35rem', marginBottom: 16 }}>Pick your doctor &amp; time</h3>
                 <div className="field">
                   <label>Choose a Doctor</label>
                   <div style={{ display: 'grid', gap: 10 }}>
@@ -198,69 +212,34 @@ export default function Booking() {
                   <textarea value={data.notes} placeholder="Symptoms, preferences, etc."
                             onChange={(e) => set('notes', e.target.value)} />
                 </div>
-                <div style={{ background: 'var(--mint-50)', borderRadius: 14, padding: 18 }}>
-                  <b style={{ fontSize: '.88rem', display: 'block', marginBottom: 8 }}>Booking Summary</b>
-                  <div style={{ fontSize: '.87rem', color: 'var(--ink-soft)', lineHeight: 2 }}>
-                    <div><Icon name="tooth" size={14} />&nbsp; {data.service}</div>
-                    <div><Icon name="stethoscope" size={14} />&nbsp; {data.doctor}</div>
-                    <div><Icon name="calendar" size={14} />&nbsp; {data.date || '—'} at {data.slot || '—'}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4 — CONFIRMED */}
-            {step === 4 && confirmed && (
-              <div style={{ textAlign: 'center', padding: '14px 0' }}>
-                <div style={{ width: 84, height: 84, borderRadius: '50%', background: 'var(--mint-100)',
-                              color: 'var(--teal-600)', display: 'grid', placeItems: 'center', margin: '0 auto 20px' }}>
-                  <Icon name="check" size={44} stroke={2.5} />
-                </div>
-                <h2 style={{ fontSize: '1.8rem', marginBottom: 6 }}>You're All Booked! 🎉</h2>
-                <p style={{ color: 'var(--ink-soft)', marginBottom: 24 }}>
-                  A confirmation has been sent to your WhatsApp &amp; email.
-                </p>
-                <div style={{ background: 'var(--mint-50)', borderRadius: 16, padding: 22,
-                              textAlign: 'left', maxWidth: 380, margin: '0 auto 24px' }}>
-                  {[
-                    ['Booking ID', confirmed.id],
-                    ['Patient', confirmed.patient],
-                    ['Treatment', confirmed.service],
-                    ['Doctor', confirmed.doctor],
-                    ['Date & Time', `${confirmed.date} · ${confirmed.time}`],
-                  ].map(([k, v]) => (
-                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between',
-                                          padding: '8px 0', borderBottom: '1px solid var(--sand)' }}>
-                      <span style={{ color: 'var(--ink-soft)', fontSize: '.87rem' }}>{k}</span>
-                      <b style={{ fontSize: '.89rem', textAlign: 'right' }}>{v}</b>
-                    </div>
-                  ))}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 13,
-                                color: 'var(--teal-700)', fontSize: '.83rem', fontWeight: 600 }}>
-                    <Icon name="bell" size={15} /> Reminder will be sent 24 hrs before.
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <button className="btn btn-primary" onClick={() => navigate('/')}>
-                    Back to Home <Icon name="arrow" size={16} />
-                  </button>
-                  <button className="btn btn-ghost" onClick={reset}>Book Another</button>
+                <div className="booking-summary">
+                  <b>Booking Summary</b>
+                  <div className="bs-row"><Icon name="tooth" size={14} /> {data.service}</div>
+                  <div className="bs-row"><Icon name="stethoscope" size={14} /> {data.doctor}</div>
+                  <div className="bs-row"><Icon name="calendar" size={14} /> {data.date || '—'} at {data.slot || '—'}</div>
                 </div>
               </div>
             )}
 
             {/* NAV BUTTONS */}
-            {step < 4 && (
-              <div style={{ display: 'flex', gap: 12, marginTop: 26 }}>
-                {step > 1 && <button className="btn btn-ghost" onClick={back}>Back</button>}
-                <button className="btn btn-primary" style={{ flex: 1 }} onClick={next}>
-                  {step === 3 ? 'Confirm Appointment' : 'Continue'} <Icon name="arrow" size={17} />
-                </button>
-              </div>
-            )}
+            <div style={{ display: 'flex', gap: 12, marginTop: 26 }}>
+              {step > 1 && <button className="btn btn-ghost" onClick={back}>Back</button>}
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={next}>
+                {step === 3 ? 'Confirm Appointment' : 'Continue'} <Icon name="arrow" size={17} />
+              </button>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* TICKET POPUP */}
+      {showTicket && confirmed && (
+        <BookingTicket
+          booking={confirmed}
+          onClose={reset}
+          onViewHome={() => navigate('/')}
+        />
+      )}
     </div>
   )
 }

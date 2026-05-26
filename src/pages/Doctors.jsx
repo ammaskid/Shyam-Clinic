@@ -5,6 +5,7 @@
 import { useNavigate } from 'react-router-dom'
 import Icon from '../components/Icon'
 import CountUp from '../components/CountUp'
+import Scene3D from '../components/Scene3D'
 import { usePageAnimations } from '../components/useGsapReveal'
 import { DOCTORS } from '../data/clinicData'
 
@@ -14,11 +15,16 @@ export default function Doctors() {
 
   return (
     <div ref={pageRef}>
-      <section className="page-hero">
-        <div className="container">
-          <div className="crumbs anim">Home / Our Doctors</div>
-          <h1 className="anim">Meet Our <em>Specialists</em></h1>
-          <p className="anim">A team of award-winning, deeply experienced dentists who genuinely care about your comfort.</p>
+      <section className="page-hero page-hero-3d">
+        <div className="container page-hero-grid">
+          <div>
+            <div className="crumbs anim">Home / Our Doctors</div>
+            <h1 className="anim">Meet Our <em>Specialists</em></h1>
+            <p className="anim">A team of award-winning, deeply experienced dentists who genuinely care about your comfort.</p>
+          </div>
+          <div className="page-hero-3d-stage anim">
+            <Scene3D variant="shield" height={280} />
+          </div>
         </div>
       </section>
 

@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import Icon from '../components/Icon'
 import CountUp from '../components/CountUp'
+import Scene3D from '../components/Scene3D'
 import { usePageAnimations } from '../components/useGsapReveal'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
@@ -39,18 +40,20 @@ export default function Reviews() {
 
   return (
     <div ref={pageRef}>
-      <section className="page-hero">
-        <div className="container">
-          <div className="crumbs anim">Home / Reviews</div>
-          <h1 className="anim">What Our <em>Patients</em> Say</h1>
-          <p className="anim">Honest stories from the people who trust us with their smiles.</p>
-          <div className="anim" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginTop: 20,
-                        background: '#fff', padding: '12px 22px', borderRadius: 100, boxShadow: 'var(--shadow-sm)' }}>
-            <span style={{ color: 'var(--gold)', fontSize: '1.25rem', letterSpacing: 2 }}>★★★★★</span>
-            <b style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem' }}>
-              <CountUp value={Number(avg)} decimals={1} />
-            </b>
-            <span style={{ color: 'var(--ink-soft)', fontSize: '.9rem' }}>· {reviews.length} reviews</span>
+      <section className="page-hero page-hero-3d">
+        <div className="container page-hero-grid">
+          <div>
+            <div className="crumbs anim">Home / Reviews</div>
+            <h1 className="anim">What Our <em>Patients</em> Say</h1>
+            <p className="anim">Honest stories from the people who trust us with their smiles.</p>
+            <div className="anim rating-pill">
+              <span className="rating-stars">★★★★★</span>
+              <b><CountUp value={Number(avg)} decimals={1} /></b>
+              <span className="rating-count">· {reviews.length} reviews</span>
+            </div>
+          </div>
+          <div className="page-hero-3d-stage anim">
+            <Scene3D variant="sparkle" height={280} />
           </div>
         </div>
       </section>

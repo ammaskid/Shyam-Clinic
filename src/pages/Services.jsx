@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Icon from '../components/Icon'
+import Scene3D from '../components/Scene3D'
 import { usePageAnimations } from '../components/useGsapReveal'
 import { SERVICES, FAQS } from '../data/clinicData'
 
@@ -28,11 +29,16 @@ export default function Services() {
 
   return (
     <div ref={pageRef}>
-      <section className="page-hero">
-        <div className="container">
-          <div className="crumbs anim">Home / Services</div>
-          <h1 className="anim">Our <em>Treatments</em> & Services</h1>
-          <p className="anim">Comprehensive dental care delivered with modern technology and a gentle, caring approach.</p>
+      <section className="page-hero page-hero-3d">
+        <div className="container page-hero-grid">
+          <div>
+            <div className="crumbs anim">Home / Services</div>
+            <h1 className="anim">Our <em>Treatments</em> & Services</h1>
+            <p className="anim">Comprehensive dental care delivered with modern technology and a gentle, caring approach.</p>
+          </div>
+          <div className="page-hero-3d-stage anim">
+            <Scene3D variant="tooth" height={280} />
+          </div>
         </div>
       </section>
 

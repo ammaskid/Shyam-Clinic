@@ -6,6 +6,8 @@
 import { useState } from 'react'
 import Icon from '../components/Icon'
 import CountUp from '../components/CountUp'
+import DonutChart from '../components/DonutChart'
+import { usePageAnimations } from '../components/useGsapReveal'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import {
@@ -30,6 +32,7 @@ function statusClass(s) {
 }
 
 export default function AdminDashboard() {
+  const pageRef = usePageAnimations()
   const {
     appointments, updateAppointmentStatus, deleteAppointment,
     patients, addPatient, invoices, logoutAdmin, resetDemo,
@@ -96,7 +99,7 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className="dash">
+    <div className="dash" ref={pageRef}>
       {/* SIDEBAR (desktop) */}
       <aside className="dash-side">
         <div className="ds-brand">Shyam Dental</div>
@@ -150,7 +153,7 @@ export default function AdminDashboard() {
         {/* ============ OVERVIEW ============ */}
         {tab === 'overview' && (
           <>
-            <div className="kpi-grid">
+            <div className="kpi-grid anim-stagger">
               {kpis.map((k) => (
                 <div className="kpi" key={k.label}>
                   <div className="kpi-ic" style={{ background: k.bg, color: k.c }}>
@@ -167,7 +170,7 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            <div className="panel">
+            <div className="panel anim">
               <div className="panel-head">
                 <h3>Today's Schedule</h3>
                 <span style={{ fontSize: '.85rem', color: 'var(--ink-soft)' }}>
@@ -200,7 +203,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="panel-row2">
-              <div className="panel">
+              <div className="panel anim">
                 <div className="panel-head"><h3>Revenue Trend (6 Months)</h3></div>
                 <div className="bars">
                   {REVENUE_BARS.map((b) => (
@@ -211,7 +214,7 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               </div>
-              <div className="panel">
+              <div className="panel anim">
                 <div className="panel-head"><h3>Recent Activity</h3></div>
                 {ACTIVITY_FEED.map((a, i) => (
                   <div className="activity-item" key={i}>
@@ -231,7 +234,7 @@ export default function AdminDashboard() {
 
         {/* ============ APPOINTMENTS ============ */}
         {tab === 'appointments' && (
-          <div className="panel">
+          <div className="panel anim">
             <div className="panel-head">
               <h3>All Appointments ({appointments.length})</h3>
               <span style={{ fontSize: '.82rem', color: 'var(--teal-600)', fontWeight: 600 }}>
@@ -275,7 +278,7 @@ export default function AdminDashboard() {
 
         {/* ============ PATIENTS ============ */}
         {tab === 'patients' && (
-          <div className="panel">
+          <div className="panel anim">
             <div className="panel-head">
               <h3>Patient Records ({patients.length})</h3>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -370,7 +373,7 @@ export default function AdminDashboard() {
         {/* ============ BILLING ============ */}
         {tab === 'billing' && (
           <>
-            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
+            <div className="kpi-grid anim-stagger" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
               <div className="kpi">
                 <div className="kpi-ic" style={{ background: '#d6f6ef', color: '#0f7268' }}>
                   <Icon name="check" size={20} />
@@ -394,7 +397,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="panel">
+            <div className="panel anim">
               <div className="panel-head">
                 <h3>Invoices &amp; Payments</h3>
                 <button className="btn btn-ghost btn-sm"
@@ -428,7 +431,7 @@ export default function AdminDashboard() {
         {/* ============ ANALYTICS ============ */}
         {tab === 'analytics' && (
           <>
-            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
+            <div className="kpi-grid anim-stagger" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
               {[
                 { ic: 'rupee', bg: '#d6f6ef', c: '#0f7268', num: 184500, prefix: '₹', label: 'This Month' },
                 { ic: 'chart', bg: '#fff1d6', c: '#9a6b00', num: 972000, prefix: '₹', label: 'This Quarter' },
@@ -444,20 +447,47 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            <div className="panel">
-              <div className="panel-head"><h3>Monthly Revenue</h3></div>
-              <div className="bars" style={{ height: 220 }}>
-                {REVENUE_BARS.map((b) => (
-                  <div className="bar-col" key={b.label}>
-                    <div className="bar" style={{ height: b.value + '%' }} />
-                    <span>{b.label}</span>
+            <div className="panel-row2">
+              <div className="panel anim">
+                <div className="panel-head"><h3>Monthly Revenue</h3></div>
+                <div className="bars" style={{ height: 220 }}>
+                  {REVENUE_BARS.map((b) => (
+                    <div className="bar-col" key={b.label}>
+                      <div className="bar" style={{ height: b.value + '%' }} />
+                      <span>{b.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="panel anim">
+                <div className="panel-head"><h3>Treatment Mix</h3></div>
+                <div className="donut-wrap">
+                  <DonutChart
+                    size={180}
+                    segments={REVENUE_BY_TREATMENT.slice(0, 5).map((r, i) => ({
+                      label: r.name,
+                      value: r.share,
+                      color: ['#16a394', '#e2a93b', '#5b46c9', '#ff7a59', '#43c9b0'][i],
+                    }))}
+                    centerLabel="₹18.4L"
+                    centerSub="Total"
+                  />
+                  <div className="donut-legend">
+                    {REVENUE_BY_TREATMENT.slice(0, 5).map((r, i) => (
+                      <div className="donut-leg-item" key={r.name}>
+                        <span className="donut-dot"
+                              style={{ background: ['#16a394','#e2a93b','#5b46c9','#ff7a59','#43c9b0'][i] }} />
+                        <span className="donut-leg-name">{r.name}</span>
+                        <b>{r.share}%</b>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
             </div>
 
             <div className="panel-row2">
-              <div className="panel">
+              <div className="panel anim">
                 <div className="panel-head"><h3>Revenue by Treatment</h3></div>
                 <div className="table-scroll">
                   <table>
@@ -480,7 +510,7 @@ export default function AdminDashboard() {
                   </table>
                 </div>
               </div>
-              <div className="panel">
+              <div className="panel anim">
                 <div className="panel-head"><h3>Clinic Health</h3></div>
                 {[
                   ['No-show rate', '2.4%'],

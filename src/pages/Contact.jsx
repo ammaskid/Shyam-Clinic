@@ -4,6 +4,7 @@
 
 import { useState } from 'react'
 import Icon from '../components/Icon'
+import Scene3D from '../components/Scene3D'
 import { usePageAnimations } from '../components/useGsapReveal'
 import { CLINIC } from '../data/clinicData'
 import { useToast } from '../context/ToastContext'
@@ -27,11 +28,16 @@ export default function Contact() {
 
   return (
     <div ref={pageRef}>
-      <section className="page-hero">
-        <div className="container">
-          <div className="crumbs anim">Home / Contact</div>
-          <h1 className="anim">Get in <em>Touch</em></h1>
-          <p className="anim">Have a question or want to visit us? We're here and happy to help.</p>
+      <section className="page-hero page-hero-3d">
+        <div className="container page-hero-grid">
+          <div>
+            <div className="crumbs anim">Home / Contact</div>
+            <h1 className="anim">Get in <em>Touch</em></h1>
+            <p className="anim">Have a question or want to visit us? We're here and happy to help.</p>
+          </div>
+          <div className="page-hero-3d-stage anim">
+            <Scene3D variant="orbit" height={280} />
+          </div>
         </div>
       </section>
 
