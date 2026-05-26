@@ -18,10 +18,10 @@ export const CLINIC = {
 }
 
 export const STATS = [
-  { value: "17+", label: "Years of Care" },
-  { value: "25,000+", label: "Happy Smiles" },
-  { value: "4.9★", label: "Google Rating" },
-  { value: "6", label: "Expert Doctors" },
+  { value: "17+", num: 17, suffix: "+", decimals: 0, label: "Years of Care" },
+  { value: "25,000+", num: 25000, suffix: "+", decimals: 0, label: "Happy Smiles" },
+  { value: "4.9★", num: 4.9, suffix: "★", decimals: 1, label: "Google Rating" },
+  { value: "6", num: 6, suffix: "", decimals: 0, label: "Expert Doctors" },
 ]
 
 export const SERVICES = [

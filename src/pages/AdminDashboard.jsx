@@ -5,6 +5,7 @@
 
 import { useState } from 'react'
 import Icon from '../components/Icon'
+import CountUp from '../components/CountUp'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 import {
@@ -88,10 +89,10 @@ export default function AdminDashboard() {
 
   // ---- KPI cards ----
   const kpis = [
-    { ic: 'calendar', bg: '#d6f6ef', c: '#0f7268', val: todayAppts.length, label: "Today's Appointments", trend: '+3 vs yesterday', up: true },
-    { ic: 'users', bg: '#fff1d6', c: '#9a6b00', val: patients.length, label: 'Total Patients', trend: '+12 this week', up: true },
-    { ic: 'rupee', bg: '#e7e1ff', c: '#5b46c9', val: inr(paidRevenue), label: 'Revenue Collected', trend: '+18% growth', up: true },
-    { ic: 'star', bg: '#ffe1da', c: '#c0392b', val: '4.9', label: 'Avg. Rating', trend: '1,800+ reviews', up: true },
+    { ic: 'calendar', bg: '#d6f6ef', c: '#0f7268', num: todayAppts.length, label: "Today's Appointments", trend: '+3 vs yesterday', up: true },
+    { ic: 'users', bg: '#fff1d6', c: '#9a6b00', num: patients.length, label: 'Total Patients', trend: '+12 this week', up: true },
+    { ic: 'rupee', bg: '#e7e1ff', c: '#5b46c9', num: paidRevenue, prefix: '₹', label: 'Revenue Collected', trend: '+18% growth', up: true },
+    { ic: 'star', bg: '#ffe1da', c: '#c0392b', num: 4.9, decimals: 1, label: 'Avg. Rating', trend: '1,800+ reviews', up: true },
   ]
 
   return (
@@ -155,7 +156,9 @@ export default function AdminDashboard() {
                   <div className="kpi-ic" style={{ background: k.bg, color: k.c }}>
                     <Icon name={k.ic} size={20} />
                   </div>
-                  <b>{k.val}</b>
+                  <b>
+                    <CountUp value={k.num} prefix={k.prefix || ''} decimals={k.decimals || 0} />
+                  </b>
                   <div className="kpi-label">{k.label}</div>
                   <div className={'kpi-trend ' + (k.up ? 'trend-up' : 'trend-down')}>
                     <Icon name="trend" size={13} /> {k.trend}
@@ -427,15 +430,15 @@ export default function AdminDashboard() {
           <>
             <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
               {[
-                { ic: 'rupee', bg: '#d6f6ef', c: '#0f7268', val: '₹1,84,500', label: 'This Month' },
-                { ic: 'chart', bg: '#fff1d6', c: '#9a6b00', val: '₹9,72,000', label: 'This Quarter' },
-                { ic: 'card', bg: '#e7e1ff', c: '#5b46c9', val: '₹2,640', label: 'Avg. per Patient' },
+                { ic: 'rupee', bg: '#d6f6ef', c: '#0f7268', num: 184500, prefix: '₹', label: 'This Month' },
+                { ic: 'chart', bg: '#fff1d6', c: '#9a6b00', num: 972000, prefix: '₹', label: 'This Quarter' },
+                { ic: 'card', bg: '#e7e1ff', c: '#5b46c9', num: 2640, prefix: '₹', label: 'Avg. per Patient' },
               ].map((k) => (
                 <div className="kpi" key={k.label}>
                   <div className="kpi-ic" style={{ background: k.bg, color: k.c }}>
                     <Icon name={k.ic} size={20} />
                   </div>
-                  <b>{k.val}</b>
+                  <b><CountUp value={k.num} prefix={k.prefix} /></b>
                   <div className="kpi-label">{k.label}</div>
                 </div>
               ))}

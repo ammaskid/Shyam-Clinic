@@ -4,11 +4,13 @@
 
 import { useState } from 'react'
 import Icon from '../components/Icon'
-import Reveal from '../components/Reveal'
+import CountUp from '../components/CountUp'
+import { usePageAnimations } from '../components/useGsapReveal'
 import { useApp } from '../context/AppContext'
 import { useToast } from '../context/ToastContext'
 
 export default function Reviews() {
+  const pageRef = usePageAnimations()
   const { reviews, addReview } = useApp()
   const notify = useToast()
   const [form, setForm] = useState({ name: '', role: '', rating: 5, text: '' })
@@ -36,16 +38,18 @@ export default function Reviews() {
     : '0.0'
 
   return (
-    <div>
+    <div ref={pageRef}>
       <section className="page-hero">
         <div className="container">
-          <div className="crumbs">Home / Reviews</div>
-          <h1>What Our <em>Patients</em> Say</h1>
-          <p>Honest stories from the people who trust us with their smiles.</p>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginTop: 20,
+          <div className="crumbs anim">Home / Reviews</div>
+          <h1 className="anim">What Our <em>Patients</em> Say</h1>
+          <p className="anim">Honest stories from the people who trust us with their smiles.</p>
+          <div className="anim" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginTop: 20,
                         background: '#fff', padding: '12px 22px', borderRadius: 100, boxShadow: 'var(--shadow-sm)' }}>
             <span style={{ color: 'var(--gold)', fontSize: '1.25rem', letterSpacing: 2 }}>★★★★★</span>
-            <b style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem' }}>{avg}</b>
+            <b style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem' }}>
+              <CountUp value={Number(avg)} decimals={1} />
+            </b>
             <span style={{ color: 'var(--ink-soft)', fontSize: '.9rem' }}>· {reviews.length} reviews</span>
           </div>
         </div>
@@ -54,9 +58,9 @@ export default function Reviews() {
       {/* REVIEW GRID */}
       <section className="section" style={{ paddingTop: 54 }}>
         <div className="container">
-          <div className="rev-grid">
-            {reviews.map((r, i) => (
-              <Reveal className="rev-card" key={r.id} delay={(i % 3) * 0.07}>
+          <div className="rev-grid anim-stagger">
+            {reviews.map((r) => (
+              <div className="rev-card" key={r.id}>
                 <div className="rev-top">
                   <div className="rev-stars">
                     {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
@@ -71,7 +75,7 @@ export default function Reviews() {
                     <span>{r.role}</span>
                   </div>
                 </div>
-              </Reveal>
+              </div>
             ))}
           </div>
         </div>
@@ -80,12 +84,12 @@ export default function Reviews() {
       {/* WRITE REVIEW */}
       <section className="section bg-mint">
         <div className="container">
-          <Reveal className="section-head">
+          <div className="section-head anim">
             <span className="eyebrow">Share Your Experience</span>
             <h2>Write a Review</h2>
             <p>Visited us recently? We'd love to hear how it went.</p>
-          </Reveal>
-          <Reveal className="form-card">
+          </div>
+          <div className="form-card anim">
             <div className="form-row">
               <div className="field">
                 <label>Your Name</label>
@@ -121,7 +125,7 @@ export default function Reviews() {
             <button className="btn btn-primary btn-block btn-lg" onClick={submit}>
               <Icon name="star" size={18} /> Submit My Review
             </button>
-          </Reveal>
+          </div>
         </div>
       </section>
     </div>

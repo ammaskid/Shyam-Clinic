@@ -4,11 +4,12 @@
 
 import { useState } from 'react'
 import Icon from '../components/Icon'
-import Reveal from '../components/Reveal'
+import { usePageAnimations } from '../components/useGsapReveal'
 import { CLINIC } from '../data/clinicData'
 import { useToast } from '../context/ToastContext'
 
 export default function Contact() {
+  const pageRef = usePageAnimations()
   const notify = useToast()
   const [form, setForm] = useState({ name: '', phone: '', message: '' })
 
@@ -25,12 +26,12 @@ export default function Contact() {
   const bbox = `${lng - 0.02}%2C${lat - 0.02}%2C${lng + 0.02}%2C${lat + 0.02}`
 
   return (
-    <div>
+    <div ref={pageRef}>
       <section className="page-hero">
         <div className="container">
-          <div className="crumbs">Home / Contact</div>
-          <h1>Get in <em>Touch</em></h1>
-          <p>Have a question or want to visit us? We're here and happy to help.</p>
+          <div className="crumbs anim">Home / Contact</div>
+          <h1 className="anim">Get in <em>Touch</em></h1>
+          <p className="anim">Have a question or want to visit us? We're here and happy to help.</p>
         </div>
       </section>
 
@@ -38,7 +39,7 @@ export default function Contact() {
         <div className="container">
           <div className="contact-grid">
             {/* INFO */}
-            <Reveal>
+            <div className="anim">
               <span className="eyebrow">Reach Us</span>
               <h2 style={{ fontSize: '2rem', marginBottom: 20 }}>We'd Love to Hear From You</h2>
               {[
@@ -71,10 +72,10 @@ export default function Contact() {
                         loading="lazy"
                         src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`} />
               </div>
-            </Reveal>
+            </div>
 
             {/* FORM */}
-            <Reveal delay={0.1}>
+            <div className="anim">
               <div className="form-card" style={{ margin: 0, maxWidth: 'none' }}>
                 <h3 style={{ fontSize: '1.35rem', marginBottom: 6 }}>Send a Message</h3>
                 <p style={{ color: 'var(--ink-soft)', marginBottom: 20, fontSize: '.93rem' }}>
@@ -99,7 +100,7 @@ export default function Contact() {
                   <Icon name="mail" size={18} /> Send Message
                 </button>
               </div>
-            </Reveal>
+            </div>
           </div>
         </div>
       </section>

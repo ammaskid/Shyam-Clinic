@@ -1,11 +1,11 @@
 /* ============================================================
-   Services Page
+   Services Page — with GSAP animations
    ============================================================ */
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Icon from '../components/Icon'
-import Reveal from '../components/Reveal'
+import { usePageAnimations } from '../components/useGsapReveal'
 import { SERVICES, FAQS } from '../data/clinicData'
 
 const PRICE_LIST = [
@@ -22,35 +22,36 @@ const PRICE_LIST = [
 ]
 
 export default function Services() {
+  const pageRef = usePageAnimations()
   const [active, setActive] = useState(null)
   const [openFaq, setOpenFaq] = useState(0)
 
   return (
-    <div>
+    <div ref={pageRef}>
       <section className="page-hero">
         <div className="container">
-          <div className="crumbs">Home / Services</div>
-          <h1>Our <em>Treatments</em> & Services</h1>
-          <p>Comprehensive dental care delivered with modern technology and a gentle, caring approach.</p>
+          <div className="crumbs anim">Home / Services</div>
+          <h1 className="anim">Our <em>Treatments</em> & Services</h1>
+          <p className="anim">Comprehensive dental care delivered with modern technology and a gentle, caring approach.</p>
         </div>
       </section>
 
       {/* SERVICE CARDS */}
       <section className="section" style={{ paddingTop: 56 }}>
         <div className="container">
-          <div className="svc-grid">
-            {SERVICES.map((s, i) => (
-              <Reveal className="svc-card" key={s.id} delay={(i % 3) * 0.08}>
-                <div onClick={() => setActive(active === s.id ? null : s.id)} style={{ cursor: 'pointer' }}>
-                  {s.tag && <span className="svc-tag">{s.tag}</span>}
-                  <div className="svc-icon"><Icon name={s.icon} size={28} /></div>
-                  <h3>{s.name}</h3>
-                  <p>{active === s.id ? s.long : s.desc}</p>
-                  <div className="svc-price">{s.price} <small>{s.unit}</small></div>
-                  <div className="svc-meta"><Icon name="clock" size={13} /> {s.duration} appointment</div>
-                  <div className="svc-more">{active === s.id ? '− Show less' : '+ Learn more'}</div>
-                </div>
-              </Reveal>
+          <div className="svc-grid anim-stagger">
+            {SERVICES.map((s) => (
+              <div className="svc-card" key={s.id}
+                   onClick={() => setActive(active === s.id ? null : s.id)}
+                   style={{ cursor: 'pointer' }}>
+                {s.tag && <span className="svc-tag">{s.tag}</span>}
+                <div className="svc-icon"><Icon name={s.icon} size={28} /></div>
+                <h3>{s.name}</h3>
+                <p>{active === s.id ? s.long : s.desc}</p>
+                <div className="svc-price">{s.price} <small>{s.unit}</small></div>
+                <div className="svc-meta"><Icon name="clock" size={13} /> {s.duration} appointment</div>
+                <div className="svc-more">{active === s.id ? '− Show less' : '+ Learn more'}</div>
+              </div>
             ))}
           </div>
         </div>
@@ -59,12 +60,12 @@ export default function Services() {
       {/* PRICE LIST */}
       <section className="section bg-mint">
         <div className="container">
-          <Reveal className="section-head">
+          <div className="section-head anim">
             <span className="eyebrow">Transparent Pricing</span>
             <h2>Clear Costs, No Surprises</h2>
             <p>Every price is upfront. Easy no-cost EMI options available on treatments above ₹15,000.</p>
-          </Reveal>
-          <Reveal className="price-table" >
+          </div>
+          <div className="price-table anim-stagger">
             {PRICE_LIST.map((p) => (
               <div className="price-row" key={p.n}>
                 <div className="pr-name">
@@ -74,28 +75,28 @@ export default function Services() {
                 <div className="pr-amt">{p.a}</div>
               </div>
             ))}
-          </Reveal>
+          </div>
         </div>
       </section>
 
       {/* FAQ */}
       <section className="section">
         <div className="container">
-          <Reveal className="section-head">
+          <div className="section-head anim">
             <span className="eyebrow">Good to Know</span>
             <h2>Frequently Asked Questions</h2>
             <p>Everything you might want to know before your visit.</p>
-          </Reveal>
-          <div className="faq-list">
+          </div>
+          <div className="faq-list anim-stagger">
             {FAQS.map((f, i) => (
-              <Reveal className="faq-item" key={i} delay={i * 0.05}>
+              <div className="faq-item" key={i}>
                 <button className={'faq-q' + (openFaq === i ? ' open' : '')}
                         onClick={() => setOpenFaq(openFaq === i ? -1 : i)}>
                   {f.q}
                   <span className="faq-icon"><Icon name="plus" size={20} /></span>
                 </button>
                 <div className={'faq-a' + (openFaq === i ? ' open' : '')}>{f.a}</div>
-              </Reveal>
+              </div>
             ))}
           </div>
         </div>
@@ -104,14 +105,14 @@ export default function Services() {
       {/* CTA */}
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container">
-          <Reveal className="cta-band">
+          <div className="cta-band anim">
             <div className="cta-tooth"><Icon name="sparkle" size={210} /></div>
             <h2>Not Sure Which Treatment You Need?</h2>
             <p>Book a consultation — our doctors will guide you with an honest plan.</p>
             <Link to="/booking" className="btn btn-gold btn-lg">
               <Icon name="stethoscope" size={19} /> Book a Consultation
             </Link>
-          </Reveal>
+          </div>
         </div>
       </section>
     </div>

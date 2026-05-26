@@ -11,10 +11,10 @@ export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // close menu on route change
+  // close menu whenever the route changes
   useEffect(() => { setOpen(false) }, [location.pathname])
 
-  // lock body scroll when menu open
+  // lock body scroll while the mobile menu is open
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
@@ -28,31 +28,41 @@ export default function Navbar() {
     { to: '/contact', label: 'Contact' },
   ]
 
-  const isActive = (to) => to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
+  const isActive = (to) =>
+    to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
+
+  // navigate AND always close the menu (works even if same route)
+  const handleNav = (to) => {
+    setOpen(false)
+    navigate(to)
+  }
 
   return (
     <>
       <nav className="nav">
         <div className="container nav-inner">
-          <Link to="/" className="brand">
+          <button className="brand" onClick={() => handleNav('/')}
+                  style={{ background: 'none', cursor: 'pointer' }}>
             <div className="brand-mark"><Icon name="tooth" size={24} /></div>
             <div className="brand-text">
               <b>Shyam Dental</b>
               <span>Clinic</span>
             </div>
-          </Link>
+          </button>
 
           <div className={'nav-links' + (open ? ' open' : '')}>
             {links.map((l) => (
-              <Link key={l.to} to={l.to}
-                    className={'nav-link' + (isActive(l.to) ? ' active' : '')}>
+              <button key={l.to}
+                      className={'nav-link' + (isActive(l.to) ? ' active' : '')}
+                      onClick={() => handleNav(l.to)}>
                 {l.label}
-              </Link>
+              </button>
             ))}
-            <Link to="/admin" className={'nav-link' + (isActive('/admin') ? ' active' : '')}>
+            <button className={'nav-link' + (isActive('/admin') ? ' active' : '')}
+                    onClick={() => handleNav('/admin')}>
               <Icon name="lock" size={14} /> &nbsp;Admin
-            </Link>
-            <button className="btn btn-primary nav-cta" onClick={() => navigate('/booking')}>
+            </button>
+            <button className="btn btn-primary nav-cta" onClick={() => handleNav('/booking')}>
               <Icon name="calendar" size={17} /> Book Now
             </button>
           </div>
@@ -62,7 +72,8 @@ export default function Navbar() {
           </button>
         </div>
       </nav>
-      <div className={'nav-overlay' + (open ? ' show' : '')} onClick={() => setOpen(false)} />
+      <div className={'nav-overlay' + (open ? ' show' : '')}
+           onClick={() => setOpen(false)} />
     </>
   )
 }
