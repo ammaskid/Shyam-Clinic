@@ -608,29 +608,10 @@ tbody tr:hover { background: var(--mint-50); }
   .section-head h2 { font-size: 1.7rem; }
   .section-head p { font-size: .96rem; }
 
-  /* --- mobile nav: slide-out drawer --- */
+  /* --- mobile nav: burger shows, desktop links hidden --- */
   .nav-inner { height: 66px; }
-  .nav-links {
-    position: fixed; top: 66px; right: 0; bottom: 0;
-    width: 82%; max-width: 320px;
-    background: var(--cream); flex-direction: column; align-items: stretch;
-    padding: 20px 18px; gap: 4px; box-shadow: var(--shadow-lg);
-    transform: translateX(110%);
-    transition: transform .32s cubic-bezier(.4, 0, .2, 1);
-    z-index: 210; overflow-y: auto;
-  }
-  .nav-links.open { transform: translateX(0); }
-  .nav-links .nav-link {
-    width: 100%; padding: 14px 16px; font-size: 1rem;
-    display: flex; align-items: center;
-  }
-  .nav-links .nav-cta { margin: 10px 0 0; }
-  .nav-links .btn { width: 100%; }
+  .nav-links { display: none; }
   .burger { display: grid; place-items: center; }
-  .nav-overlay.show {
-    display: block; position: fixed; inset: 66px 0 0 0;
-    background: rgba(8, 49, 47, .45); z-index: 205;
-  }
 
   /* --- hero --- */
   .hero { padding: 32px 0 56px; }
@@ -724,10 +705,12 @@ tbody tr:hover { background: var(--mint-50); }
    v2.1 — IMPACT BAND, ANIMATION SAFETY, MOBILE OVERFLOW FIX
    ============================================================ */
 
-/* --- prevent ANY horizontal scroll on mobile --- */
-html, body { max-width: 100%; overflow-x: hidden; }
-#root { overflow-x: hidden; }
-.section, .hero, .page-hero { overflow-x: clip; }
+/* --- prevent ANY horizontal scroll on mobile ---
+   NOTE: overflow-x:hidden on <body> breaks position:fixed children
+   in mobile browsers, so we clip on .section wrappers instead and
+   leave html/body able to host fixed elements (the nav drawer). */
+.section, .hero, .page-hero, .impact-band { overflow-x: clip; }
+.app-shell { overflow-x: clip; }
 
 /* GSAP-animated elements: visible by default (so if GSAP fails
    to load, nothing is ever hidden). GSAP itself sets opacity:0
@@ -772,4 +755,101 @@ html, body { max-width: 100%; overflow-x: hidden; }
 }
 @media (max-width: 430px) {
   .impact-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   MOBILE DRAWER (portal — rendered into <body>)
+   ============================================================ */
+.mobile-drawer-root {
+  position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none; visibility: hidden;
+}
+.mobile-drawer-root.open { pointer-events: auto; visibility: visible; }
+
+.mobile-drawer-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(8, 49, 47, .5);
+  opacity: 0; transition: opacity .3s ease;
+}
+.mobile-drawer-root.open .mobile-drawer-backdrop { opacity: 1; }
+
+.mobile-drawer {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 84%; max-width: 340px;
+  background: var(--cream);
+  box-shadow: -20px 0 60px rgba(8, 49, 47, .3);
+  transform: translateX(100%);
+  transition: transform .34s cubic-bezier(.4, 0, .2, 1);
+  display: flex; flex-direction: column;
+  padding: 18px 18px 24px;
+  overflow-y: auto;
+}
+.mobile-drawer-root.open .mobile-drawer { transform: translateX(0); }
+
+.mobile-drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 16px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--sand-d);
+}
+.mobile-drawer-close {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--mint-100); color: var(--teal-700);
+}
+.mobile-drawer-links { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.mobile-drawer-link {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 15px 14px; border-radius: 14px;
+  font-size: 1.02rem; font-weight: 500; color: var(--ink);
+  background: none; transition: background .2s, color .2s;
+}
+.mobile-drawer-link:hover,
+.mobile-drawer-link.active {
+  background: var(--mint-100); color: var(--teal-700); font-weight: 600;
+}
+.mobile-drawer-link .icon { opacity: .35; }
+.mobile-drawer-cta { margin-top: 18px; }
+.mobile-drawer-foot {
+  margin-top: auto; padding-top: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+  font-size: .9rem; color: var(--ink-soft);
+}
+.mobile-drawer-foot a, .mobile-drawer-foot span {
+  display: flex; align-items: center; gap: 9px; color: var(--ink-soft);
+}
+
+/* desktop: portal drawer never shows */
+@media (min-width: 761px) {
+  .mobile-drawer-root { display: none; }
+}
+
+/* ============================================================
+   PARTICLE BACKGROUND + SCROLL PROGRESS
+   ============================================================ */
+.particle-bg {
+  position: fixed; inset: 0; width: 100vw; height: 100vh;
+  z-index: 0; pointer-events: none;
+}
+/* keep all real content above the particles */
+.app-shell { position: relative; z-index: 1; }
+/* sections are opaque so particles read as a soft backdrop;
+   give them slight transparency only where it looks good */
+.hero { background: transparent; }
+.section-sm { background: transparent; }
+
+.scroll-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px;
+  z-index: 9998; background: rgba(13,92,84,.08);
+}
+.scroll-progress-bar {
+  height: 100%; width: 100%;
+  transform: scaleX(0); transform-origin: left;
+  background: linear-gradient(90deg, var(--mint-400), var(--teal-600), var(--gold));
+  transition: transform .1s linear;
+}
+
+/* sections need a backdrop so text stays readable over particles */
+.section:not(.bg-mint):not(.bg-teal):not(.impact-band) {
+  background: rgba(251,250,246,.72);
+  backdrop-filter: blur(2px);
 }

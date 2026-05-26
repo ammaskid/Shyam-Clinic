@@ -8,6 +8,8 @@ import { ToastProvider } from './context/ToastContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
+import ParticleBackground from './components/ParticleBackground'
+import ScrollProgress from './components/ScrollProgress'
 
 import Home from './pages/Home'
 import Services from './pages/Services'
@@ -26,6 +28,9 @@ export default function App() {
     <AppProvider>
       <ToastProvider>
         <ScrollToTop />
+        {/* dental particles behind everything (hidden on admin) */}
+        {!isAdmin && <ParticleBackground />}
+        {!isAdmin && <ScrollProgress />}
         <div className="app-shell">
           <Navbar />
           <main className="app-main">

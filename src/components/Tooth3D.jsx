@@ -1,148 +1,234 @@
 /* ============================================================
-   Tooth3D — a gently rotating 3D tooth (Three.js)
-   Built from primitive geometry so it works on any Three r160+.
-   SAFE: if WebGL or Three fails, shows a clean SVG tooth instead.
-   Pointer-rotatable on desktop, auto-rotates everywhere.
+   Tooth3D — a realistic, colourful, engaging 3D tooth scene.
+   Built from primitive geometry (works on any Three r0.160+).
+   Features: glossy enamel, orbiting coloured sparkles, a glow
+   halo, soft floating particles, pointer-rotation + auto-spin.
+   SAFE: if WebGL/Three fails, shows a clean SVG fallback.
    ============================================================ */
 
 import { useEffect, useRef, useState } from 'react'
 import Icon from './Icon'
 
-export default function Tooth3D({ height = 360 }) {
+export default function Tooth3D({ height = 400 }) {
   const mountRef = useRef(null)
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
-    let renderer, scene, camera, frameId, three
+    let renderer, scene, camera, frameId
     let cancelled = false
     const mount = mountRef.current
     if (!mount) return
 
-    // respect reduced motion
     const reduce = window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     ;(async () => {
       try {
-        three = await import('three')
+        const THREE = await import('three')
         if (cancelled || !mount) return
 
-        const THREE = three
-        const w = mount.clientWidth || 360
+        const w = mount.clientWidth || 400
         const h = height
 
         scene = new THREE.Scene()
         camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100)
-        camera.position.set(0, 0, 7.5)
+        camera.position.set(0, 0, 8)
 
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
         renderer.setSize(w, h)
+        if (renderer.outputColorSpace !== undefined) {
+          renderer.outputColorSpace = THREE.SRGBColorSpace
+        }
         mount.appendChild(renderer.domElement)
 
-        // ---- Build a tooth from primitives ----
+        // ---------- GLOW HALO (behind tooth) ----------
+        const haloMat = new THREE.MeshBasicMaterial({
+          color: 0x43c9b0, transparent: true, opacity: 0.18,
+        })
+        const halo = new THREE.Mesh(new THREE.CircleGeometry(2.9, 48), haloMat)
+        halo.position.z = -1.5
+        scene.add(halo)
+        const halo2 = new THREE.Mesh(
+          new THREE.CircleGeometry(2.2, 48),
+          new THREE.MeshBasicMaterial({ color: 0x7fdcc6, transparent: true, opacity: 0.22 })
+        )
+        halo2.position.z = -1.2
+        scene.add(halo2)
+
+        // ---------- THE TOOTH ----------
         const toothGroup = new THREE.Group()
+
+        // glossy pearl-white enamel with a faint warm tint
         const enamel = new THREE.MeshStandardMaterial({
-          color: 0xffffff, roughness: 0.18, metalness: 0.05,
-          emissive: 0xeafff9, emissiveIntensity: 0.15,
+          color: 0xfdfdfb, roughness: 0.12, metalness: 0.12,
+          emissive: 0xdef7f0, emissiveIntensity: 0.22,
         })
 
-        // Crown — rounded top (sphere squashed)
-        const crown = new THREE.Mesh(new THREE.SphereGeometry(1.25, 48, 48), enamel)
-        crown.scale.set(1, 0.85, 1)
-        crown.position.y = 0.55
+        // Crown — wide rounded top (two lobes give a molar-ish realism)
+        const crown = new THREE.Mesh(new THREE.SphereGeometry(1.3, 64, 64), enamel)
+        crown.scale.set(1.05, 0.78, 0.95)
+        crown.position.y = 0.7
         toothGroup.add(crown)
 
-        // Body — tapered cylinder
+        // little cusp bumps on top for realism
+        const cuspGeo = new THREE.SphereGeometry(0.42, 32, 32)
+        ;[[-0.5, 1.35, 0.25], [0.5, 1.35, 0.25], [0, 1.4, -0.35]].forEach((p) => {
+          const c = new THREE.Mesh(cuspGeo, enamel)
+          c.position.set(p[0], p[1], p[2])
+          c.scale.set(1, 0.7, 1)
+          toothGroup.add(c)
+        })
+
+        // Body — smooth tapered transition
         const body = new THREE.Mesh(
-          new THREE.CylinderGeometry(1.15, 0.78, 1.5, 48), enamel
+          new THREE.CylinderGeometry(1.2, 0.82, 1.4, 64), enamel
         )
-        body.position.y = -0.35
+        body.position.y = -0.25
         toothGroup.add(body)
 
-        // Two roots — tapered cones
-        const rootGeo = new THREE.CylinderGeometry(0.5, 0.06, 1.7, 32)
+        // Two roots — tapered, slightly curved outward
+        const rootGeo = new THREE.CylinderGeometry(0.52, 0.05, 1.9, 40)
         const rootL = new THREE.Mesh(rootGeo, enamel)
-        rootL.position.set(-0.42, -1.7, 0)
-        rootL.rotation.z = 0.22
+        rootL.position.set(-0.44, -1.55, 0)
+        rootL.rotation.z = 0.26
         toothGroup.add(rootL)
         const rootR = new THREE.Mesh(rootGeo, enamel)
-        rootR.position.set(0.42, -1.7, 0)
-        rootR.rotation.z = -0.22
+        rootR.position.set(0.44, -1.55, 0)
+        rootR.rotation.z = -0.26
         toothGroup.add(rootR)
 
-        toothGroup.position.y = 0.35
+        // a soft mint "shine" stripe on the crown
+        const shine = new THREE.Mesh(
+          new THREE.SphereGeometry(0.34, 24, 24),
+          new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 })
+        )
+        shine.position.set(-0.55, 1.05, 0.85)
+        shine.scale.set(1, 1.6, 0.5)
+        toothGroup.add(shine)
+
+        toothGroup.position.y = 0.3
         scene.add(toothGroup)
 
-        // sparkle accent
-        const sparkleMat = new THREE.MeshStandardMaterial({
-          color: 0x43c9b0, roughness: 0.2, metalness: 0.3,
-          emissive: 0x43c9b0, emissiveIntensity: 0.5,
+        // ---------- ORBITING COLOURED SPARKLES ----------
+        const sparkleColors = [0x43c9b0, 0xe2a93b, 0x5b46c9, 0xff7a59, 0x16a394]
+        const sparkles = []
+        sparkleColors.forEach((col, i) => {
+          const geo = i % 2 === 0
+            ? new THREE.OctahedronGeometry(0.2)
+            : new THREE.TetrahedronGeometry(0.24)
+          const mat = new THREE.MeshStandardMaterial({
+            color: col, emissive: col, emissiveIntensity: 0.7,
+            roughness: 0.25, metalness: 0.4,
+          })
+          const m = new THREE.Mesh(geo, mat)
+          m.userData = {
+            radius: 2.5 + (i % 2) * 0.5,
+            speed: 0.4 + i * 0.12,
+            offset: (i / sparkleColors.length) * Math.PI * 2,
+            yAmp: 0.6 + (i % 3) * 0.4,
+          }
+          sparkles.push(m)
+          scene.add(m)
         })
-        const sparkle = new THREE.Mesh(new THREE.OctahedronGeometry(0.22), sparkleMat)
-        sparkle.position.set(1.05, 1.35, 0.9)
-        scene.add(sparkle)
 
-        // ---- Lighting ----
-        scene.add(new THREE.AmbientLight(0xffffff, 0.65))
-        const key = new THREE.DirectionalLight(0xffffff, 1.1)
-        key.position.set(4, 6, 5)
-        scene.add(key)
-        const teal = new THREE.PointLight(0x16a394, 0.9, 30)
-        teal.position.set(-5, -2, 4)
-        scene.add(teal)
-        const warm = new THREE.PointLight(0xffe2b8, 0.6, 30)
-        warm.position.set(5, 3, -3)
-        scene.add(warm)
-
-        // ---- Pointer interaction ----
-        let targetRotY = 0, targetRotX = 0
-        let curRotY = 0, curRotX = 0
-        function onMove(e) {
-          const r = mount.getBoundingClientRect()
-          const px = (e.clientX - r.left) / r.width - 0.5
-          const py = (e.clientY - r.top) / r.height - 0.5
-          targetRotY = px * 0.9
-          targetRotX = py * 0.6
+        // ---------- FLOATING PARTICLES ----------
+        const particleCount = 90
+        const pGeo = new THREE.BufferGeometry()
+        const pPos = new Float32Array(particleCount * 3)
+        for (let i = 0; i < particleCount; i++) {
+          pPos[i * 3] = (Math.random() - 0.5) * 11
+          pPos[i * 3 + 1] = (Math.random() - 0.5) * 9
+          pPos[i * 3 + 2] = (Math.random() - 0.5) * 5 - 1
         }
-        function onLeave() { targetRotY = 0; targetRotX = 0 }
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3))
+        const pMat = new THREE.PointsMaterial({
+          color: 0x43c9b0, size: 0.07, transparent: true, opacity: 0.55,
+          sizeAttenuation: true,
+        })
+        const particles = new THREE.Points(pGeo, pMat)
+        scene.add(particles)
+
+        // ---------- LIGHTING ----------
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7))
+        const key = new THREE.DirectionalLight(0xffffff, 1.15)
+        key.position.set(4, 6, 6)
+        scene.add(key)
+        const teal = new THREE.PointLight(0x16a394, 1.1, 30)
+        teal.position.set(-5, -1, 4)
+        scene.add(teal)
+        const gold = new THREE.PointLight(0xffd089, 0.8, 30)
+        gold.position.set(5, 3, -2)
+        scene.add(gold)
+        const violet = new THREE.PointLight(0x7c6cf0, 0.6, 26)
+        violet.position.set(0, -4, 3)
+        scene.add(violet)
+
+        // ---------- POINTER INTERACTION ----------
+        let targetY = 0, targetX = 0, curY = 0, curX = 0
+        const onMove = (e) => {
+          const r = mount.getBoundingClientRect()
+          const cx = (e.touches ? e.touches[0].clientX : e.clientX)
+          const cy = (e.touches ? e.touches[0].clientY : e.clientY)
+          targetY = ((cx - r.left) / r.width - 0.5) * 1.1
+          targetX = ((cy - r.top) / r.height - 0.5) * 0.7
+        }
+        const onLeave = () => { targetY = 0; targetX = 0 }
         mount.addEventListener('pointermove', onMove)
         mount.addEventListener('pointerleave', onLeave)
+        mount.addEventListener('touchmove', onMove, { passive: true })
 
-        // ---- Animate ----
+        // ---------- ANIMATE ----------
         const clock = new THREE.Clock()
-        function tick() {
+        const tick = () => {
           if (cancelled) return
           frameId = requestAnimationFrame(tick)
           const t = clock.getElapsedTime()
-          curRotY += (targetRotY - curRotY) * 0.06
-          curRotX += (targetRotX - curRotX) * 0.06
-          const spin = reduce ? 0 : t * 0.35
-          toothGroup.rotation.y = spin + curRotY
-          toothGroup.rotation.x = curRotX
-          toothGroup.position.y = 0.35 + (reduce ? 0 : Math.sin(t * 1.2) * 0.12)
-          sparkle.rotation.x = t * 1.5
-          sparkle.rotation.y = t * 1.2
-          sparkle.scale.setScalar(0.85 + Math.sin(t * 3) * 0.15)
+
+          curY += (targetY - curY) * 0.06
+          curX += (targetX - curX) * 0.06
+
+          toothGroup.rotation.y = (reduce ? 0 : t * 0.4) + curY
+          toothGroup.rotation.x = curX
+          toothGroup.position.y = 0.3 + (reduce ? 0 : Math.sin(t * 1.1) * 0.14)
+
+          sparkles.forEach((s) => {
+            const d = s.userData
+            s.position.x = Math.cos(t * d.speed + d.offset) * d.radius
+            s.position.z = Math.sin(t * d.speed + d.offset) * d.radius
+            s.position.y = Math.sin(t * d.speed * 1.3 + d.offset) * d.yAmp + 0.3
+            s.rotation.x = t * 1.6
+            s.rotation.y = t * 1.3
+            const sc = 0.8 + Math.sin(t * 3 + d.offset) * 0.25
+            s.scale.setScalar(sc)
+          })
+
+          if (!reduce) {
+            particles.rotation.y = t * 0.04
+            particles.rotation.x = Math.sin(t * 0.2) * 0.1
+          }
+          halo.scale.setScalar(1 + Math.sin(t * 1.5) * 0.05)
+          halo2.scale.setScalar(1 + Math.cos(t * 1.8) * 0.06)
+
           renderer.render(scene, camera)
         }
         tick()
 
-        // ---- Resize ----
-        function onResize() {
+        // ---------- RESIZE ----------
+        const onResize = () => {
           if (!mount) return
-          const nw = mount.clientWidth || 360
+          const nw = mount.clientWidth || 400
           camera.aspect = nw / h
           camera.updateProjectionMatrix()
           renderer.setSize(nw, h)
         }
         window.addEventListener('resize', onResize)
 
-        // cleanup store
         mount._cleanup = () => {
           window.removeEventListener('resize', onResize)
           mount.removeEventListener('pointermove', onMove)
           mount.removeEventListener('pointerleave', onLeave)
+          mount.removeEventListener('touchmove', onMove)
         }
       } catch (e) {
         console.warn('Tooth3D: 3D unavailable, showing fallback.', e)
@@ -163,12 +249,11 @@ export default function Tooth3D({ height = 360 }) {
     }
   }, [height])
 
-  // SVG fallback — used if WebGL/Three is unavailable
   if (failed) {
     return (
       <div className="tooth3d-fallback" style={{ height }}>
         <div className="tooth3d-fallback-inner">
-          <Icon name="tooth" size={140} />
+          <Icon name="tooth" size={150} />
         </div>
       </div>
     )
